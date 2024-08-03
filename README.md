@@ -1,110 +1,184 @@
-# Веб-сервис R
+# Proxy Service
 
-#### Данный сервис (Container 1) имеет два интерфейса:
+This service acts as a proxy between users and the storage service. Users interact with this service via RESTful API calls, and the service communicates with the storage backend using SOAP.
 
-#### а) REST API для взаимодействия с пользователями;
+## Table of Contents
 
-#### б) SOAP для взаимодействия с другими системами.
+- [Features](#features)
+- [API Endpoints](#api-endpoints)
+    - [Get a Student by Record Book Number](#get-a-student-by-record-book-number)
+    - [Get All Students](#get-all-students)
+- [Response Structure](#response-structure)
+- [Setup](#setup)
+- [Running the Service](#running-the-service)
+- [Running with Docker Compose](#running-with-docker-compose)
+- [Dependencies](#dependencies)
 
-#### Внутри этого сервиса реализованы алгоритмы трансформации данных из JSON в XML и обратно.
+## Features
 
-## Как взаимодействовать?
-#### SWAGGER http://localhost:8080/swagger-ui/index.html
+- Provides a RESTful API to interact with the storage service.
+- Retrieves individual student data by record book number.
+- Retrieves a list of all students.
+- Returns consistent response formats with HTTP status codes.
 
-### 1) Регистрация сайта.
+## API Endpoints
 
-#### - Сервисом могут пользоваться разные сайты. Каждому сайту выдается пару пароль и логин. Чтобы зарегистрировать сайт в систему нужно отправить запроса.
+### Get a Student by Record Book Number
 
-__REQUEST__
-_POST_ `/registration`
+**Endpoint:** `GET /proxy/students/{recordBookNumber}`
 
-```json
-{
-  "site": "job4j.ru"
-}
+**Description:** Retrieve details of a student by their record book number.
+
+**Request Example:**
+
+```bash
+curl --location 'localhost:8087/proxy/students/12412'
 ```
 
-__RESPONSE__
-```json
-{
-"registration" : true/false, 
-"login": УНИКАЛЬНЫЙ_КОД, 
-"password" : УНИКАЛЬНЫЙ_КОД
-}
+#### Response examples 
+
+- success
 ```
-
-
-### 2) Авторизация.
-
-#### - Пользователь отправляет POST запрос с login и password и получает ключ. Этот ключ отправляет в запросе в блоке HEAD.
-
-Authorization: Bearer e25d31c5-db66-4cf2-85d4-8faa8c544ad6
-
-
-### 3) Регистрация URL.
-
-#### - Поле того, как пользователь зарегистрировал свой сайт он может отправлять на сайт ссылки и получать преобразованные ссылки.
-
-__REQUEST__
-_POST_ `/convert`
-
-```json
 {
-  "url": "https://job4j.ru/profile/exercise/106/task-view/532"
-}
-```
-
-__RESPONSE__
-```json
-{
-"code" : УНИКАЛЬНЫЙ_КОД
-}
-```
-
-### 4) Переадресация. Выполняется без авторизации.
-
-#### Когда сайт отправляет ссылку с кодом в ответ возвращается ассоциированный адрес и статус 302.
-
-__REQUEST__
-_GET_ `/redirect/УНИКАЛЬНЫЙ_КОД`
-
-__RESPONSE__
-
-HTTP CODE - 302 REDIRECT URL
-
-### 5) Статистика.
-
-#### В сервисе считается количество вызовов каждого адреса. По сайту можно получить статистку всех адресов и количество вызовов этого адреса.
-
-__REQUEST__
-_GET_ `/statistic`
-
-__RESPONSE__
-```json
-[
-    {
-      "url": "URL",
-      "total": 0
-    },
-    {
-      "url": "https://job4j.ru/profile/exercise/106/task-view/532", 
-      "total": 103
+    "success": true,
+    "message": {
+        "id": 2,
+        "firstName": "Sara",
+        "lastName": "John",
+        "fatherName": "John",
+        "file": "[encoded_file]",
+        "fileName": "3_2.jpg",
+        "contentType": "image/jpeg",
+        "age": 19,
+        "recordBookNumber": "12411",
+        "createdAt": "2024-08-03T17:52:22.568544",
+        "updatedAt": "2024-08-03T17:52:22.568572"
     }
-]
+}
+```
+
+- not found
+```
+{
+    "success": false,
+    "error": {
+        "name": "BAD_REQUEST",
+        "code": 400,
+        "description": "Student with recordBookNumber: 12412 not found"
+    }
+}
+```
+
+- server error
+```
+{
+"success": false,
+"error": {
+"name": "INTERNAL_SERVER_ERROR",
+"code": 500,
+"description": "Ошибка сервера"
+}
+}
 ```
 
 
-## Стек технологий:
 
-#### - Java 17
+### Get All Students
 
-## Требования к окружению
+**Endpoint:** `GET /proxy/students`
 
-#### - Java 17, Maven 4.0
+**Description:** Retrieve a list of all students.
 
-## Контакты
+**Request Example:**
 
-#### - @urmoonfriend
+```bash
+curl --location 'localhost:8087/proxy/students'
+```
+
+#### Response examples
+
+- success
+```
+{
+    "success": true,
+    "message": [
+        {
+            "id": 1,
+            "firstName": "Clare",
+            "lastName": "John",
+            "fatherName": "John",
+            "file": "[encoded_file]",
+            "fileName": "3.jpg",
+            "contentType": "image/jpeg",
+            "age": 19,
+            "recordBookNumber": "12410",
+            "createdAt": "2024-08-03T16:05:06.312368",
+            "updatedAt": "2024-08-03T16:05:06.312472"
+        },
+        {
+            "id": 2,
+            "firstName": "Sara",
+            "lastName": "John",
+            "fatherName": "John",
+            "file": "[encoded_file]",
+            "fileName": "3_2.jpg",
+            "contentType": "image/jpeg",
+            "age": 19,
+            "recordBookNumber": "12411",
+            "createdAt": "2024-08-03T17:52:22.568544",
+            "updatedAt": "2024-08-03T17:52:22.568572"
+        }
+    ]
+}
+
+```
+
+- server error
+```
+{
+"success": false,
+"error": {
+"name": "INTERNAL_SERVER_ERROR",
+"code": 500,
+"description": "Ошибка сервера"
+}
+}
+```
+
+## Setup
+### Ensure Java and Maven are installed. Clone the repository. Navigate to the project directory. Run mvn clean install to build the project. Configure the storage service endpoint in the application.properties file.
+
+## Running the Service
+### Start the service with mvn spring-boot:run. The service will be accessible at http://localhost:8087/proxy.
+
+## Running with Docker Compose
+### You can run the service using Docker Compose. The service will be built and run inside a Docker container.
+
+### Prerequisites
+#### Docker and Docker Compose should be installed on your system.
+### Steps 
+Build the Docker image:
+```
+docker-compose build
+```
+
+Start the service:
+```
+docker-compose up
+```
+
+The service will be accessible at http://localhost:8087/proxy.
+
+To stop the service, use:
+```
+docker-compose down
+```
 
 
 
+## Dependencies
+- ### Spring Boot
+- ### Spring Web Services
+- ### Lombok
+- ### ModelMapper
+- ### Jakarta XML Bind (JAXB)
