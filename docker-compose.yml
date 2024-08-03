@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  storage:
+    image: client:0.0.1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: proxy
+    ports:
+      - "8087:8087"

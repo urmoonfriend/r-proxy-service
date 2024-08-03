@@ -1,0 +1,22 @@
+app:
+  name: r-proxy-service
+spring:
+  main:
+    banner-mode: off
+  application:
+    name: ${app.name}
+server:
+  port: 8087
+  servlet:
+    context-path: /proxy
+storage:
+  client:
+    uri: http://localhost:8086/Service/StudentService
+logging:
+  level:
+    org:
+      springframework: ERROR
+      hibernate: ERROR
+      apache: ERROR
+    kz:
+      company: DEBUG
