@@ -1,7 +1,7 @@
 # Proxy Service
 
 This service acts as a proxy between users and the storage service. Users interact with this service via RESTful API calls, and the service communicates with the storage backend using SOAP.
-
+Service has 2 possibility to interact with storage-service, via rabbitmq, and via soap.
 ## Table of Contents
 
 - [Features](#features)
@@ -25,14 +25,16 @@ This service acts as a proxy between users and the storage service. Users intera
 
 ### Get a Student by Record Book Number
 
-**Endpoint:** `GET /proxy/students/{recordBookNumber}`
+**Endpoint:** `GET /proxy/students/{method}/{recordBookNumber}`
+
+**Method:** Parameter in url, which could be `soap` or `async`
 
 **Description:** Retrieve details of a student by their record book number.
 
 **Request Example:**
 
 ```bash
-curl --location 'localhost:8087/proxy/students/12412'
+curl --location 'localhost:8087/proxy/students/soap/12412'
 ```
 
 #### Response examples 
@@ -85,14 +87,16 @@ curl --location 'localhost:8087/proxy/students/12412'
 
 ### Get All Students
 
-**Endpoint:** `GET /proxy/students`
+**Endpoint:** `GET /proxy/students/{method}`
+
+**Method:** Parameter in url, which could be `soap` or `async`
 
 **Description:** Retrieve a list of all students.
 
 **Request Example:**
 
 ```bash
-curl --location 'localhost:8087/proxy/students'
+curl --location 'localhost:8087/proxy/students/async'
 ```
 
 #### Response examples

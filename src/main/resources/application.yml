@@ -1,10 +1,73 @@
 app:
   name: r-proxy-service
+  streams:
+    environment:
+      host: 127.0.0.1
+      username: guest
+      password: guest
 spring:
   main:
     banner-mode: off
   application:
     name: ${app.name}
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+  cloud:
+    function:
+      definition: receiveStorageOneStudentResponse;receiveStorageAllStudentsResponse;
+    stream:
+      rabbit:
+        binder:
+          connection-name-prefix: ${spring.application.name}
+        bindings:
+          receiveStorageOneStudentResponse-in-0:
+            consumer:
+              auto-bind-dlq: true
+              dlqTtl: 30000
+              bindingRoutingKey: STORAGE_ONE_STUDENT.RESPONSE
+              consumerTagPrefix: ${spring.application.name}
+          receiveStorageAllStudentsResponse-in-0:
+            consumer:
+              auto-bind-dlq: true
+              dlqTtl: 30000
+              bindingRoutingKey: STORAGE_ALL_STUDENTS.RESPONSE
+              consumerTagPrefix: ${spring.application.name}
+          storageOneStudentRequest-out-0:
+            producer:
+              auto-bind-dlq: true
+              dlq-ttl: 30000
+              routingKeyExpression: '''STORAGE_ONE_STUDENT.REQUEST'''
+          storageAllStudentsRequest-out-0:
+            producer:
+              auto-bind-dlq: true
+              dlq-ttl: 30000
+              routingKeyExpression: '''STORAGE_ALL_STUDENTS.REQUEST'''
+      bindings:
+        receiveStorageOneStudentResponse-in-0:
+          destination: PROXY
+          group: STORAGE_ONE_STUDENT.RESPONSE
+          consumer:
+            concurrency: 5
+        receiveStorageAllStudentsResponse-in-0:
+          destination: PROXY
+          group: STORAGE_ALL_STUDENTS.RESPONSE
+          consumer:
+            concurrency: 5
+        storageOneStudentRequest-out-0:
+          destination: STORAGE
+          group: STORAGE_ONE_STUDENT.REQUEST
+        storageAllStudentsRequest-out-0:
+          destination: STORAGE
+          group: STORAGE_ALL_STUDENTS.REQUEST
+    binders:
+      rabbit-local:
+        type: rabbit
+        environment:
+          spring:
+            rabbitmq:
+              host: ${app.streams.environment.host}
+              username: ${app.streams.environment.username}
+              password: ${app.streams.environment.password}
 server:
   port: 8087
   servlet:
@@ -20,3 +83,8 @@ logging:
       apache: ERROR
     kz:
       company: DEBUG
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,health,info,metrics,loggers

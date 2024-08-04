@@ -8,3 +8,14 @@ services:
     container_name: proxy
     ports:
       - "8087:8087"
+  rabbit:
+    image: rabbitmq:3.12.14-management
+    container_name: rabbit
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    hostname: local-rabbit
+    restart: always
