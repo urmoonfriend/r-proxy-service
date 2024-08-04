@@ -11,4 +11,5 @@ import lombok.experimental.Accessors;
 @XmlRootElement(name = "getAllUnits", namespace = "http://service.ws.sample/")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class GetAllUnitsRequest {
+    private String correlationId;
 }

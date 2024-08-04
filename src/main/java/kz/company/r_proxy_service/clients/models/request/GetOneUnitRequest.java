@@ -14,4 +14,5 @@ import lombok.experimental.Accessors;
 public class GetOneUnitRequest {
     @XmlElement(name = "recordBookNumber")
     private String recordBookNumber;
+    private String correlationId;
 }
